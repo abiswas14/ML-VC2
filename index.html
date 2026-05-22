@@ -1,0 +1,71 @@
+<!DOCTYPE html><html><head><meta charset='utf-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1' />
+<title>ML VC2 Project Proposal</title>
+<style>
+:root { --text:#111827; --muted:#6b7280; --bg:#ffffff; --card:#f9fafb; --border:#e5e7eb; --accent:#1f2937; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color:var(--text); margin:0; background:var(--bg); }
+.container { max-width: 920px; margin: 40px auto; padding: 0 18px; }
+h1 { font-size: 2rem; margin: 0 0 6px; }
+.subtitle { color: var(--muted); margin: 0 0 26px; }
+.section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 18px; margin: 14px 0; }
+.section h2 { margin: 0 0 10px; font-size: 1.25rem; }
+p { margin: 10px 0; line-height: 1.55; }
+table { width:100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid var(--border); padding: 10px 10px; vertical-align: top; }
+th { background: #ffffff; text-align:left; }
+.note { color: var(--muted); font-size: 0.95rem; }
+.badge { display:inline-block; padding: 3px 10px; border:1px solid var(--border); border-radius: 999px; font-size: 0.85rem; color: var(--muted); margin-left: 8px; }
+a { color:#2563eb; text-decoration:none; }
+a:hover { text-decoration:underline; }
+</style></head><body>
+<div class='container'>
+<h1>Machine Learning Enhancements to a VC2 Value Strategy</h1>
+<p class='subtitle'>CS 4641/7641 Project Proposal <span class='badge'>Group 56</span></p>
+<div class='section'>
+<h2>1. Introduction and Background</h2>
+<p>Value investing is one of the most well-documented strategies in empirical finance. Research by Eugene Fama and Kenneth French shows that valuation measures such as price-to-book help explain cross-sectional differences in expected returns [1]. Composite value approaches improve robustness by combining multiple metrics rather than relying on a single ratio. The Value Composite Two (VC2) approach uses PB, PE, PS, PCF, EV/EBITDA, and shareholder yield to identify undervalued securities.</p>
+<p>Despite its strong historical performance, value investing often overstates results in practice. This is due to issues such as lookahead bias when aligning fundamentals with prices, instability across market regimes, and parameter sensitivity [2], [3]. Additionally, value traps—stocks that appear cheap but continue to decline—can reduce realized returns.</p>
+<p>This project evaluates whether supervised and unsupervised machine learning methods can improve the robustness and risk-adjusted performance of a VC2 strategy implemented in Backtrader. The goal is to enhance returns while reducing bias and improving stability across varying market conditions.</p>
+<p><strong>Dataset.</strong> We use daily panel data for S&P 500 stocks from 2013–2024 (approximately 500 stocks over ~2,500 trading days). Each stock includes close price, RSI, PB, PE, PS, PCF, EV/EBITDA, and shareholder yield, with valuation ratios derived from structured fundamental data and aligned to daily prices.</p>
+<p>The dataset exhibits both temporal and cross-sectional dependencies, meaning observations are related over time for each stock and across stocks at each point in time. Additional features, including short-term momentum and rolling volatility, are constructed from price data. This panel structure supports both supervised and unsupervised learning.</p>
+</div>
+<div class='section'>
+<h2>2. Problem Definition and Motivation</h2>
+<p><strong>Problem.</strong> A standard VC2 strategy ranks stocks cross-sectionally and selects the lowest-valued names. However, it faces several practical limitations. It is vulnerable to value traps, where cheap stocks continue to underperform. Its effectiveness also varies across market regimes, as value strategies behave differently under changing volatility and macroeconomic conditions. Additionally, performance can depend on assumptions about when financial data becomes available. These issues reduce the reliability of backtests and limit real-world applicability.</p>
+<p><strong>Motivation.</strong> To obtain reliable results in financial machine learning, time-aware evaluation is essential. This project applies a walk-forward framework with machine learning models to filter stocks and adapt to regimes. The objective is to determine whether these methods can improve robustness compared to a traditional composite value strategy.</p>
+</div>
+<div class='section'>
+<h2>3. Methods</h2>
+<p><strong>3.1 Baseline Strategy.</strong> We implement VC2 in Backtrader to simulate historical performance. Stocks are ranked relative to each other using percentile rankings based on valuation metrics. The most undervalued stocks are selected, and the top N are equally weighted in the portfolio. The portfolio is rebalanced every 28 trading days. Transaction costs and slippage are included to reflect realistic trading conditions.</p>
+<p><strong>3.2 Data Preprocessing.</strong> Data preprocessing is conducted using Python libraries such as pandas and numpy. Key steps include cross-sectional percentile ranking of valuation ratios, winsorization to reduce the impact of outliers, and time-alignment experiments (e.g., lagging fundamentals) to test sensitivity to reporting assumptions. Momentum and volatility features are also constructed from price data. These steps aim to reduce noise and mitigate lookahead bias.</p>
+<p><strong>3.3 Supervised Learning Methods.</strong> Two supervised classification models are implemented using libraries such as scikit-learn and XGBoost. <em>Logistic Regression</em> is a linear model used to predict whether a stock selected by VC2 will outperform the market over a specified horizon and provides an interpretable baseline. <em>Gradient Boosting</em> is a non-linear ensemble model capable of capturing interactions between valuation and technical features. Models are trained using time-series cross-validation (rolling windows) to prevent information leakage. The classifiers act as filters: VC2 generates candidate stocks, and the model selects those with the highest predicted probability of outperformance.</p>
+<p><strong>3.4 Unsupervised Learning Method.</strong> To address regime instability, we apply Principal Components Analysis (PCA) to market-state features such as return dispersion and volatility. The resulting components serve as indicators of market regimes and allow the strategy to adapt its behavior across different environments.</p>
+</div>
+<div class='section'>
+<h2>4. Potential Results and Evaluation</h2>
+<p><strong>Evaluation Metrics.</strong> Trading metrics: CAGR, Sharpe ratio, Sortino ratio, maximum drawdown, turnover, and transaction-cost-adjusted returns. ML metrics: ROC-AUC, precision-recall AUC, and precision at top-K selections. Robustness metrics: rolling Sharpe ratio and performance across identified regimes.</p>
+<p><strong>Experimental Comparisons.</strong> We compare the baseline VC2 strategy, VC2 under alternative fundamental timing assumptions, VC2 with logistic regression filtering, VC2 with gradient boosting filtering, and VC2 with PCA-based regime adaptation.</p>
+<p>We expect supervised models to reduce value traps and improve risk-adjusted returns, while PCA-based adjustments enhance stability across market regimes.</p>
+<p><strong>Sustainability and Ethical Considerations.</strong> The project addresses bias by testing timing assumptions and using time-aware validation. The selected models are computationally efficient and scalable. Transaction costs and turnover are included to ensure realistic and economically meaningful results.</p>
+</div>
+<div class='section'>
+<h2>5. References</h2>
+<p>[1] E. F. Fama and K. R. French, “The Cross-Section of Expected Stock Returns,” <em>Journal of Finance</em>, 1992.</p>
+<p>[2] M. López de Prado, <em>Advances in Financial Machine Learning</em>, Wiley, 2018.</p>
+<p>[3] C. Harvey, Y. Liu, and H. Zhu, “... and the Cross-Section of Expected Returns,” <em>Review of Financial Studies</em>, 2016.</p>
+</div>
+<div class='section'>
+<h2>Gantt Chart</h2>
+<p class='note'>Planned responsibilities and timeline (weeks refer to course weeks).</p>
+<table><thead><tr><th>Phase</th><th>Task</th><th>Responsible Members</th><th>Start Week</th><th>End Week</th></tr></thead><tbody><tr><td>Proposal</td><td>Project idea selection and literature review</td><td>All Members</td><td>1</td><td>1</td></tr><tr><td>Proposal</td><td>Dataset collection and description</td><td>Aalif, Aaron</td><td>1</td><td>2</td></tr><tr><td>Proposal</td><td>Exploratory Data Analysis (EDA)</td><td>Richard</td><td>2</td><td>2</td></tr><tr><td>Proposal</td><td>Identify preprocessing methods</td><td>Francis</td><td>2</td><td>2</td></tr><tr><td>Proposal</td><td>Select machine learning models (3+)</td><td>Meghaj</td><td>2</td><td>2</td></tr><tr><td>Proposal</td><td>GitHub Pages website setup</td><td>Aaron</td><td>2</td><td>2</td></tr><tr><td>Proposal</td><td>Proposal writing and editing</td><td>All Members</td><td>2</td><td>3</td></tr><tr><td>Proposal</td><td>Proposal video preparation</td><td>Aalif</td><td>3</td><td>3</td></tr><tr><td>Midterm Development</td><td>Data preprocessing implementation</td><td>Richard</td><td>4</td><td>5</td></tr><tr><td>Midterm Development</td><td>Baseline supervised model implementation</td><td>Aalif</td><td>5</td><td>6</td></tr><tr><td>Midterm Development</td><td>Model training and tuning</td><td>Aalif, Aaron</td><td>6</td><td>7</td></tr><tr><td>Midterm Development</td><td>Unsupervised analysis (PCA / Clustering)</td><td>Francis</td><td>6</td><td>7</td></tr><tr><td>Midterm Development</td><td>Visualization and evaluation metrics</td><td>Meghaj</td><td>7</td><td>8</td></tr><tr><td>Midterm Development</td><td>Midterm report website update</td><td>All Members</td><td>8</td><td>9</td></tr><tr><td>Final Development</td><td>Second model implementation</td><td>Aaron</td><td>9</td><td>10</td></tr><tr><td>Final Development</td><td>Third model implementation</td><td>Francis</td><td>10</td><td>11</td></tr><tr><td>Final Development</td><td>Model comparison and tuning</td><td>Aalif, Aaron</td><td>11</td><td>12</td></tr><tr><td>Final Development</td><td>Results analysis and visualizations</td><td>All Members</td><td>12</td><td>13</td></tr><tr><td>Final Development</td><td>Ethics and sustainability analysis</td><td>Richard</td><td>12</td><td>13</td></tr><tr><td>Final Development</td><td>Final report writing</td><td>All Members</td><td>13</td><td>14</td></tr><tr><td>Final Development</td><td>Final presentation preparation</td><td>All Members</td><td>14</td><td>14</td></tr></tbody></table>
+<p class='note'>Original spreadsheet included in the repository for reference.</p>
+</div>
+<div class='section'>
+<h2>Contribution Table</h2>
+<table><thead><tr><th>Name</th><th>Proposal Contributions</th></tr></thead><tbody><tr><td>Aalif</td><td>Proposed project idea, defined problem statement and motivation, designed machine learning approach, assisted with organization and preparation of proposal presentation video.</td></tr><tr><td>Aaron</td><td>Conducted literature review, assisted with dataset research and description, set up GT GitHub Pages website and shared with TA and members.</td></tr><tr><td>Francis</td><td>Identified preprocessing techniques and candidate ML models, helped with technical writing of proposal.</td></tr><tr><td>Richard</td><td>Developed methods for EDA for our dataset, helped finalize the dataset and write about in the proposal.</td></tr><tr><td>Meghaj</td><td>Developed evaluation metrics for the project, defined the comparison goal, worked on mostly the slides and some of the proposal writing as well.</td></tr></tbody></table>
+</div>
+<div class='section'>
+<h2>Repository Files</h2>
+<p class='note'>If you are viewing this page on GitHub Pages, the team’s Gantt chart spreadsheet should be available in the same repository.</p>
+</div>
+</div></body></html>
